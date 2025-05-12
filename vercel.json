@@ -23,8 +23,12 @@
         "handle": "filesystem"
       },
       {
-        "src": "/(.*)",
+        "src": "/$",
         "dest": "/frontend/build/index.html"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "/frontend/build/$1"
       }
     ],
     "env": {
