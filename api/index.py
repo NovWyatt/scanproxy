@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
-import os
+from fastapi.responses import JSONResponse
+import json
 
 app = FastAPI()
 
@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Danh sách các nguồn proxy công khai
+# Danh sách các nguồn proxy
 SOURCES = [
     {"name": "Free-Proxy-List.net (HTTPS)", "url": "https://free-proxy-list.net/", "id": 1},
     {"name": "SSLProxies.org (HTTPS)", "url": "https://www.sslproxies.org/", "id": 2},
@@ -28,7 +28,7 @@ SOURCES = [
     {"name": "HyperBeats Github", "url": "https://raw.githubusercontent.com/hyperbeats/proxy-list/main/https.txt", "id": 10}
 ]
 
-# Dữ liệu mẫu cho các endpoint
+# Dữ liệu mẫu
 SAMPLE_HTTP_PROXIES = [
     "103.152.112.162:80",
     "193.239.86.249:3128", 
@@ -46,30 +46,20 @@ SAMPLE_HTTPS_PROXIES = [
 ]
 
 @app.get("/api")
-def read_api_root():
-    return {
-        "message": "Chào mừng đến với Proxy Scraper API",
-        "version": "1.0.0",
-        "endpoints": {
-            "GET /api/sources": "Lấy danh sách nguồn proxy",
-            "POST /api/scrape": "Thu thập proxy từ các nguồn",
-            "POST /api/check": "Kiểm tra danh sách proxy",
-            "GET /api/test": "Kiểm tra API hoạt động"
-        }
-    }
+async def read_root():
+    return {"message": "API đang hoạt động"}
 
 @app.get("/api/sources")
-def get_sources():
+async def get_sources():
     return SOURCES
 
 @app.get("/api/test")
-def test_api():
+async def test():
     return {"status": "success", "message": "API hoạt động!"}
 
 @app.post("/api/scrape")
 async def scrape_proxies(request: Request):
     try:
-        # Đây là dữ liệu mẫu để kiểm tra frontend
         return {
             "http_proxies": SAMPLE_HTTP_PROXIES,
             "https_proxies": SAMPLE_HTTPS_PROXIES,
@@ -87,35 +77,41 @@ async def scrape_proxies(request: Request):
 @app.post("/api/check")
 async def check_proxies(request: Request):
     try:
-        # Giả lập dữ liệu cho việc kiểm tra
-        return {
-            "http_proxies": SAMPLE_HTTP_PROXIES[:2],
-            "https_proxies": [],
-            "total_http": 2,
-            "total_https": 0,
-            "message": "Kiểm tra proxy thành công",
-            "status": "success"
-        }
+        body = await request.json()
+        proxies = body.get("proxies", [])
+        protocol = body.get("protocol", "https")
+        
+        # Trả về 2 proxy đầu tiên như proxy sống
+        live_proxies = proxies[:2] if proxies else []
+        
+        if protocol == "http":
+            return {
+                "http_proxies": live_proxies,
+                "https_proxies": [],
+                "total_http": len(live_proxies),
+                "total_https": 0,
+                "message": "Kiểm tra proxy thành công",
+                "status": "success"
+            }
+        else:
+            return {
+                "http_proxies": [],
+                "https_proxies": live_proxies,
+                "total_http": 0,
+                "total_https": len(live_proxies),
+                "message": "Kiểm tra proxy thành công",
+                "status": "success"
+            }
     except Exception as e:
         return JSONResponse(
             status_code=500,
             content={"detail": f"Lỗi kiểm tra proxy: {str(e)}"}
         )
 
-@app.get("/api/latest")
-async def get_latest_proxies():
-    """Lấy danh sách proxy mới nhất đã thu thập"""
-    return {
-        "http_proxies": SAMPLE_HTTP_PROXIES,
-        "https_proxies": SAMPLE_HTTPS_PROXIES,
-        "total_http": len(SAMPLE_HTTP_PROXIES),
-        "total_https": len(SAMPLE_HTTPS_PROXIES),
-    }
-
-# Route mặc định cho serverless function
-@app.get("/")
-@app.get("/{path:path}")
-async def catch_all(path=""):
-    return JSONResponse(
-        {"message": "API Python đang hoạt động", "path": path}
-    )
+# Cần thiết cho serverless function trên Vercel
+@app.get("/{full_path:path}")
+@app.post("/{full_path:path}")
+async def catch_all(full_path: str):
+    if full_path.startswith("api/"):
+        return JSONResponse(status_code=404, content={"detail": "API endpoint không tồn tại"})
+    return JSONResponse(status_code=404, content={"detail": "Không tìm thấy trang"})
