@@ -51,6 +51,19 @@
     font-size: 2.5rem;
   }
   
+  .api-status {
+    margin: 10px 0;
+    font-weight: bold;
+  }
+  
+  .status-ok {
+    color: #e0f7e0;
+  }
+  
+  .status-error {
+    color: #ffcdd2;
+  }
+  
   .help-button {
     position: absolute;
     top: 20px;

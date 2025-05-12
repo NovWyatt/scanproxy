@@ -1,0 +1,3 @@
+# Don't ignore these files
+!build
+!build/**/*

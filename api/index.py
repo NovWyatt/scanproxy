@@ -1,11 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from typing import List, Optional, Dict, Any
-import logging
-
-# Cấu hình logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+from starlette.responses import JSONResponse
+import os
 
 app = FastAPI()
 
@@ -32,7 +28,7 @@ SOURCES = [
     {"name": "HyperBeats Github", "url": "https://raw.githubusercontent.com/hyperbeats/proxy-list/main/https.txt", "id": 10}
 ]
 
-# Dữ liệu mẫu
+# Dữ liệu mẫu cho các endpoint
 SAMPLE_HTTP_PROXIES = [
     "103.152.112.162:80",
     "193.239.86.249:3128", 
@@ -49,15 +45,8 @@ SAMPLE_HTTPS_PROXIES = [
     "51.159.115.233:3128"
 ]
 
-@app.get("/")
-async def root():
-    return {
-        "message": "Chào mừng đến với Proxy Scraper API",
-        "version": "1.0.0"
-    }
-
 @app.get("/api")
-async def api_info():
+def read_api_root():
     return {
         "message": "Chào mừng đến với Proxy Scraper API",
         "version": "1.0.0",
@@ -70,21 +59,17 @@ async def api_info():
     }
 
 @app.get("/api/sources")
-async def get_all_sources():
+def get_sources():
     return SOURCES
 
 @app.get("/api/test")
-async def test_endpoint():
+def test_api():
     return {"status": "success", "message": "API hoạt động!"}
 
 @app.post("/api/scrape")
 async def scrape_proxies(request: Request):
     try:
-        # Đọc body từ request nếu cần
-        body = await request.json()
-        logging.info(f"Received scrape request with body: {body}")
-        
-        # Trả về dữ liệu mẫu
+        # Đây là dữ liệu mẫu để kiểm tra frontend
         return {
             "http_proxies": SAMPLE_HTTP_PROXIES,
             "https_proxies": SAMPLE_HTTPS_PROXIES,
@@ -94,7 +79,6 @@ async def scrape_proxies(request: Request):
             "status": "success"
         }
     except Exception as e:
-        logging.error(f"Error in scrape_proxies: {str(e)}")
         return JSONResponse(
             status_code=500,
             content={"detail": f"Lỗi thu thập proxy: {str(e)}"}
@@ -103,11 +87,7 @@ async def scrape_proxies(request: Request):
 @app.post("/api/check")
 async def check_proxies(request: Request):
     try:
-        # Đọc body từ request nếu cần
-        body = await request.json()
-        logging.info(f"Received check request with body: {body}")
-        
-        # Trả về dữ liệu mẫu
+        # Giả lập dữ liệu cho việc kiểm tra
         return {
             "http_proxies": SAMPLE_HTTP_PROXIES[:2],
             "https_proxies": [],
@@ -117,7 +97,6 @@ async def check_proxies(request: Request):
             "status": "success"
         }
     except Exception as e:
-        logging.error(f"Error in check_proxies: {str(e)}")
         return JSONResponse(
             status_code=500,
             content={"detail": f"Lỗi kiểm tra proxy: {str(e)}"}
@@ -132,3 +111,11 @@ async def get_latest_proxies():
         "total_http": len(SAMPLE_HTTP_PROXIES),
         "total_https": len(SAMPLE_HTTPS_PROXIES),
     }
+
+# Route mặc định cho serverless function
+@app.get("/")
+@app.get("/{path:path}")
+async def catch_all(path=""):
+    return JSONResponse(
+        {"message": "API Python đang hoạt động", "path": path}
+    )
