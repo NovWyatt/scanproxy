@@ -1,9 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "next build",
-  "outputDirectory": ".next/out",
-  "framework": null,
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
-  ]
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "framework": "nextjs"
 }

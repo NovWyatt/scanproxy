@@ -8,10 +8,13 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   swcMinify: true,
-  output: 'export',
-  images: {
-    unoptimized: true,
-  }
+  // Đảm bảo không có output: 'export'
+  // Thêm cấu hình cho i18n
+  i18n: {
+    locales: ["en"],
+    defaultLocale: "en",
+  },
+  // Đảm bảo không có basePath
 }
 
 module.exports = nextConfig
