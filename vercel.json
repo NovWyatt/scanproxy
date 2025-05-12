@@ -6,7 +6,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/frontend/build/index.html"
+      "destination": "/frontend/public/index.html"
     }
   ],
   "builds": [
