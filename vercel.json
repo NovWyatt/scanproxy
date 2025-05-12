@@ -1,10 +1,7 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "cleanUrls": true,
+  "outputDirectory": "out",
   "routes": [
     {
       "src": "/api/(.*)",
@@ -14,30 +11,12 @@
       "handle": "filesystem"
     },
     {
-      "src": "/_next/(.*)",
-      "dest": "/_next/$1",
-      "check": true
-    },
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1",
-      "check": true
-    },
-    {
       "src": "/(.*)",
-      "dest": "/server/pages/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/$1.html"
     },
     {
       "src": "/",
-      "dest": "/server/pages/index.html"
-    },
-    {
-      "src": "/(.+)",
-      "dest": "/server/pages/$1.html"
+      "dest": "/index.html"
     }
   ]
 }
