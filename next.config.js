@@ -8,7 +8,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   swcMinify: true,
-  // Bỏ output: 'export' để sử dụng server-side rendering
+  output: 'export',
+  images: {
+    unoptimized: true,
+  }
 }
 
 module.exports = nextConfig
